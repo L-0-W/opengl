@@ -1,4 +1,6 @@
 #include "./Shader.hpp"
+#include "glm/ext/matrix_float4x4.hpp"
+#include "glm/gtc/type_ptr.hpp"
 #include <array>
 #include <fstream>
 #include <glad/glad.h>
@@ -17,9 +19,9 @@ struct Overloaded : TS... {
 template<typename... TS>
 Overloaded(TS...) -> Overloaded<TS...>;
 
-ENGINE::Shader::Shader() {}
+Shader::Shader() {}
 
-std::pair<std::string, std::string> ENGINE::Shader::loadShadersFile(std::string vertex_path, std::string fragment_path)
+std::pair<std::string, std::string> Shader::loadShadersFile(std::string vertex_path, std::string fragment_path)
 {
 
     std::ifstream vertex_file(vertex_path, std::ios::binary | std::ios::ate);
@@ -62,7 +64,7 @@ std::pair<std::string, std::string> ENGINE::Shader::loadShadersFile(std::string 
     return {vertex_buffer, fragment_buffer};
 }
 
-void ENGINE::Shader::ourShader(std::string vertex_path, std::string fragment_path)
+void Shader::ourShader(std::string vertex_path, std::string fragment_path)
 {
     unsigned int vertexShader, fragmentShader;
 
@@ -91,7 +93,54 @@ void ENGINE::Shader::ourShader(std::string vertex_path, std::string fragment_pat
     glDeleteShader(fragmentShader);
 }
 
-void ENGINE::Shader::use()
+void Shader::changeFragment(std::string fragment_path)
+{
+    unsigned int fragmentShader;
+
+    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+
+    auto shaders = this->loadShaderFile(fragment_path);
+
+    const char *fragmentSource = shaders.c_str();
+
+
+    glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
+    glCompileShader(fragmentShader);
+
+    glAttachShader(this->shaderProgram, fragmentShader);
+    glLinkProgram(this->shaderProgram);
+
+    glDeleteShader(fragmentShader);
+}
+
+std::string Shader::loadShaderFile(std::string fragment_path)
+{
+    std::ifstream fragment_file(fragment_path, std::ios::binary | std::ios::ate);
+
+    if (!fragment_file)
+    {
+        std::println("NÂO FOI POSSIVEL ABRIR FRAGMENT SHADER");
+        throw std::runtime_error("NÂO FOI POSSIVEL ABRIR FRAGMENT SHADER");    
+    }
+
+
+    std::streamsize fragment_size_file = fragment_file.tellg();
+
+    fragment_file.seekg(0, std::ios::beg);
+
+    std::string fragment_buffer(fragment_size_file, '\0');
+
+
+    if (!fragment_file.read(fragment_buffer.data(), fragment_size_file))
+    {
+        std::println("NÂO FOI POSSIVEL LER FRAGMENTO SHADER!");
+        throw std::runtime_error("NÂO FOI POSSIVEL LER FRAGMENT SHADER!");
+    }
+
+    return fragment_buffer;
+}
+
+void Shader::use()
 {
     glUseProgram(this->shaderProgram);
 
@@ -101,7 +150,7 @@ void ENGINE::Shader::use()
     }
 }
 
-void ENGINE::Shader::setUniform(ENGINE::Generic value, std::string uniform)
+void Shader::setUniform(Generic value, std::string uniform)
 {
     int vertexLocation = glGetUniformLocation(this->shaderProgram, uniform.c_str());
    
@@ -110,15 +159,17 @@ void ENGINE::Shader::setUniform(ENGINE::Generic value, std::string uniform)
         [vertexLocation](float i) { glUniform1f(vertexLocation, i); },
         [vertexLocation] (double i) { glUniform1d(vertexLocation, i); },
         [vertexLocation] (std::array<float, 4> i) { glUniform4f(vertexLocation, i[0], i[1], i[2], i[3]); },
-        [vertexLocation] (std::array<float, 3> i) { glUniform3f(vertexLocation, i[0], i[1], i[2]); }
+        [vertexLocation] (std::array<float, 3> i) { glUniform3f(vertexLocation, i[0], i[1], i[2]); },
+        [vertexLocation] (glm::mat4 mat4) { glUniformMatrix4fv(vertexLocation, 1, GL_FALSE, glm::value_ptr(mat4)); }
     ), value); 
 }
 
-void ENGINE::Shader::addUniform(ENGINE::Generic &value, std::string name)
+void Shader::addUniform(Generic &value, std::string name)
 {
 
     if (this->uniforms.find(name) != this->uniforms.end())
     {
+       
         this->uniforms[name] = value;
         return;
     }
@@ -127,7 +178,7 @@ void ENGINE::Shader::addUniform(ENGINE::Generic &value, std::string name)
     this->uniforms.insert({name, value});
 }
 
-unsigned int ENGINE::Shader::getRawShader()
+unsigned int Shader::getRawShader()
 {
     return this->shaderProgram;
 }

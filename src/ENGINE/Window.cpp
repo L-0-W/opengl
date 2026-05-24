@@ -3,13 +3,26 @@
 #include <GLFW/glfw3.h>
 #include <print>
 
-void ENGINE::Window::framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
 
-ENGINE::Window::Window()
+bool Window::initGLFW()
 {
+    if(!glfwInit())
+    {
+        std::println("NÂO FOI POSSIVEL INICAR GLFW");
+        return false;
+    }    
+
+    return true;
+}
+
+Window::Window()
+{
+    initGLFW();
+
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -25,12 +38,12 @@ ENGINE::Window::Window()
     glfwSetFramebufferSizeCallback(this->rawWindow, this->framebuffer_size_callback);
 };
 
-void ENGINE::Window::swapBuffers()
+void Window::swapBuffers()
 {
     glfwSwapBuffers(this->rawWindow);
 }
 
-GLFWwindow* ENGINE::Window::getRawWindow()
+GLFWwindow* Window::getRawWindow()
 {
    return this->rawWindow;
 }

@@ -2,15 +2,14 @@
 
 
 
-namespace ENGINE {
+
     class Keyboard
     {
         public:
             Keyboard();
             ~Keyboard() = default;
 
-            void processInput(GLFWwindow *window);
+            int processInput(GLFWwindow *window);
         private:
 
     };
-};

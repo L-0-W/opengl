@@ -1,16 +1,28 @@
 #include "./Keyboard.hpp"
 #include <GLFW/glfw3.h>
+#include <print>
 
 
-ENGINE::Keyboard::Keyboard()
+Keyboard::Keyboard()
 {
 
 }
 
-void ENGINE::Keyboard::processInput(GLFWwindow *window)
+int Keyboard::processInput(GLFWwindow *window)
 {
 
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    {
+        std::println("CLOSE WINDOW");
         glfwSetWindowShouldClose(window, true);
+        return 0;
+    }
 
-}
+    if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    {
+        std::println("WALK FORWARD");
+        return GLFW_KEY_W;
+    }
+    
+    return 0;
+}   

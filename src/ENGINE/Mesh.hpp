@@ -1,12 +1,20 @@
 
-#include "glm/glm.hpp"
+#pragma  once
+#include "glm/ext/matrix_float4x4.hpp"
+#include "glm/ext/vector_float3.hpp"
 #include <string>
 #include <vector>
 
-namespace ENGINE {
+
+    enum AXIS {
+        X,
+        Y,
+        Z,
+    };
+
     struct Vertex {
         glm::vec3 Position;
-        glm::vec2 TexCoords;
+        glm::vec3 Normals;
     };
     
     struct Texture {
@@ -19,19 +27,30 @@ namespace ENGINE {
             std::vector<Vertex> vertices;
             std::vector<unsigned int> indices;
             std::vector<Texture> textures;
+            glm::mat4 transform;
+            glm::vec3 pos;
 
-            Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices);
-            static Mesh TRIANGLE();
+            glm::vec3 lightPosValue;
+            
+            unsigned int VAO;
+
+            Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, glm::vec3 pos);
+            static Mesh TRIANGLE(glm::vec3 pos);
 
             void addTexture(std::string texture_path, std::string type, unsigned int shaderProgram);
-            void Draw(unsigned int shaderProgram)
-            ;
+            
+            void tranlate();
+            void scale(glm::vec3 scaleVec);
+            void rotate(float angle, AXIS axis);
+
+            void Draw();
+
             ~Mesh() = default;
         private:
-            unsigned int VAO;
             unsigned int VBO;
             unsigned int EBO;
 
+            glm::vec3 axis = glm::vec3(0.0f);
+
             void setupMesh();
     };
-}

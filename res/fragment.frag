@@ -1,27 +1,27 @@
 #version 330 core
 
-in vec2 TexCoord;
+in vec3 Normal;
+in vec3 FragPos;
+
 out vec4 FragColor;
 
-uniform vec4 ourColor;
-
-uniform sampler2D texture0;
-uniform sampler2D texture1;
-
-uniform float xPos;
-uniform float yPos;
-
+uniform vec3 objectColor;
+uniform vec3 lightColor;
+uniform vec3 lightPos;
 
 void main()
 {
-  vec4 wallColor = texture(texture0, TexCoord);
+  float ambientStrength = 0.2;
 
-  vec2 pixelCoords = gl_FragCoord.xy;
-  vec2 mousePos = vec2(xPos, yPos);
-  float lightSize = 200.0;
+  vec3 ambient = ambientStrength * lightColor;
+  
+  vec3 norm = normalize(Normal);
+  vec3 lightDir = normalize(lightPos - FragPos);
 
-  vec2 lightUV = (pixelCoords.xy - mousePos) / lightSize + vec2(0.5, 0.5);
-  vec4 lightCookie = texture(texture1, lightUV);
+  float diff = max(dot(norm, lightDir), 0.0);
+  vec3 diffuse = diff * lightColor;
 
-  FragColor = wallColor * lightCookie * 2.0;
+  vec3 result = (ambient + diffuse) * objectColor;
+
+  FragColor = vec4(result, 1.0);
 }

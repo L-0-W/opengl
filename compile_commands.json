@@ -1,6 +1,12 @@
 [
 {
   "directory": "/home/low/Desktop/opengl/build",
+  "command": "/usr/sbin/c++ -DGLFW_INCLUDE_NONE -I/home/low/Desktop/opengl/src -I/home/low/Desktop/opengl/lib/GLAD -I/home/low/Desktop/opengl/build/_deps/glm-src -std=gnu++26 -o CMakeFiles/opengl.dir/src/ENGINE/Camera.cpp.o -c /home/low/Desktop/opengl/src/ENGINE/Camera.cpp",
+  "file": "/home/low/Desktop/opengl/src/ENGINE/Camera.cpp",
+  "output": "CMakeFiles/opengl.dir/src/ENGINE/Camera.cpp.o"
+},
+{
+  "directory": "/home/low/Desktop/opengl/build",
   "command": "/usr/sbin/c++ -DGLFW_INCLUDE_NONE -I/home/low/Desktop/opengl/src -I/home/low/Desktop/opengl/lib/GLAD -I/home/low/Desktop/opengl/build/_deps/glm-src -std=gnu++26 -o CMakeFiles/opengl.dir/src/ENGINE/Core.cpp.o -c /home/low/Desktop/opengl/src/ENGINE/Core.cpp",
   "file": "/home/low/Desktop/opengl/src/ENGINE/Core.cpp",
   "output": "CMakeFiles/opengl.dir/src/ENGINE/Core.cpp.o"
@@ -16,6 +22,12 @@
   "command": "/usr/sbin/c++ -DGLFW_INCLUDE_NONE -I/home/low/Desktop/opengl/src -I/home/low/Desktop/opengl/lib/GLAD -I/home/low/Desktop/opengl/build/_deps/glm-src -std=gnu++26 -o CMakeFiles/opengl.dir/src/ENGINE/Mesh.cpp.o -c /home/low/Desktop/opengl/src/ENGINE/Mesh.cpp",
   "file": "/home/low/Desktop/opengl/src/ENGINE/Mesh.cpp",
   "output": "CMakeFiles/opengl.dir/src/ENGINE/Mesh.cpp.o"
+},
+{
+  "directory": "/home/low/Desktop/opengl/build",
+  "command": "/usr/sbin/c++ -DGLFW_INCLUDE_NONE -I/home/low/Desktop/opengl/src -I/home/low/Desktop/opengl/lib/GLAD -I/home/low/Desktop/opengl/build/_deps/glm-src -std=gnu++26 -o CMakeFiles/opengl.dir/src/ENGINE/Mouse.cpp.o -c /home/low/Desktop/opengl/src/ENGINE/Mouse.cpp",
+  "file": "/home/low/Desktop/opengl/src/ENGINE/Mouse.cpp",
+  "output": "CMakeFiles/opengl.dir/src/ENGINE/Mouse.cpp.o"
 },
 {
   "directory": "/home/low/Desktop/opengl/build",

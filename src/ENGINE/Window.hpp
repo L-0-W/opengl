@@ -2,7 +2,6 @@
 
 #include <GLFW/glfw3.h>
 
-namespace ENGINE {
 
     class Window 
     {
@@ -16,7 +15,8 @@ namespace ENGINE {
             GLFWwindow* rawWindow;
             static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
+            static bool initGLFW();
+
             int WIDTH = 800;
             int HEIGHT = 600;
     };
-};
