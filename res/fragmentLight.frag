@@ -1,7 +1,9 @@
 #version 330 core
+
 out vec4 FragColor;
+uniform vec3 lightCubeColor;
 
 void main()
 {
-    FragColor = vec4(1.0); // sempre branco puro!
+    FragColor = vec4(lightCubeColor * 5.0, 1.0); // sempre branco puro!
 }

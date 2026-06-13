@@ -1,4 +1,5 @@
 #include "./Mesh.hpp"
+#include <array>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <print>
@@ -20,6 +21,23 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, glm:
     this->indices = indices;
     this->transform = glm::mat4(1.0f);
     this->pos = pos;
+
+    this->cubePositions =
+    {
+        glm::vec3(-0.5f, 0.0f, 1.0f),
+        glm::vec3(-0.5f, 0.0f, -1.0f),
+        glm::vec3(-0.5f, 0.5f, 0.0f),
+        glm::vec3( 1.0f, 1.0f, -1.0f),
+        glm::vec3( 0.5f, -0.5f, 0.5f),
+        glm::vec3(-1.0f, 0.0f, 1.0f),
+    };
+
+    this->lightsPosition =
+    {
+       glm::vec3(-0.5f, 2.0f, 1.0f),
+       glm::vec3(-0.5f, -2.0f, 1.0f),
+       glm::vec3(-2.0f, 0.0f, 1.0f)
+    };
 
     setupMesh();
 }
@@ -59,51 +77,78 @@ void Mesh::rotate(float angle, AXIS axis)
 };
 
 void Mesh::Draw()
-{   
-    glm::vec3 cubePositions[2] = {glm::vec3(-0.5f, 0.0f, -1.0f), this->lightPosValue};
+{
+
+
     auto& core = Core::getInstace();
 
     // --- 1. Bind State ONCE ---
     core.shader.use(); // Ensure shader is active
-    
+
     // Bind textures once since they are shared by all instances in this loop
 
-    for(const auto &texture : this->textures)
+    for (int i = 0; i < textures.size(); i++)
     {
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture.id);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texture.id);
+        glActiveTexture(GL_TEXTURE0 + i);
+        glBindTexture(GL_TEXTURE_2D, textures[i].id);
     }
+
 
     glBindVertexArray(VAO);
 
-    // --- 2. The Loop (Only update what changes) ---
-    for(int i = 0; i < 2; i++)
+
+    //SOL
+    glm::mat4 modelSol = glm::mat4(1.0f);
+    modelSol = glm::translate(modelSol, this->Sol);
+    modelSol = glm::scale(modelSol, glm::vec3(3.5f, 3.5f, 3.5f));
+
+    Generic modelSolValue = modelSol;
+
+    core.lightShader.use();
+    core.lightShader.setUniform(modelSolValue, "model");
+    glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
+
+
+    int j = 0;
+    while(j < lightsPosition.size())
     {
-        if (i == 1)
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, lightsPosition[j]);
+        model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
+
+        Generic modelValue = model;
+
+        core.lightShader.use();
+        core.lightShader.setUniform(modelValue, "model");
+
+        if (j == 1)
         {
-            core.lightShader.use();
+            Generic cubeColor = std::array<float, 3>{1.0f, 0.0f, 0.0f};
+            core.lightShader.addUniform(cubeColor, "lightCubeColor");
         }
+
+        glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
+        j++;
+    }
+    // --- 2. The Loop (Only update what changes) ---
+    int i = 0;
+    while(i < cubePositions.size())
+    {
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, cubePositions[i]);
         model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-        model = glm::rotate(model, glm::radians(40.0f), glm::vec3(1.0f, 0.0f, 1.0f));
-          
+//        model = glm::rotate(model, glm::radians(40.0f), glm::vec3(1.0f, 0.0f, 1.0f));
+
         // Use your wrapper to set the uniform
         Generic modelValue = model;
-        //shader.addUniform(modelValue, "model"); 
-        if (i == 1)
-        {
-            core.lightShader.setUniform(modelValue, "model");
-        }
-        else 
-        {
-            core.shader.setUniform(modelValue, "model");
-        }
+        //shader.addUniform(modelValue, "model");
+
+        core.shader.use();
+        core.shader.setUniform(modelValue, "model");
 
         glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
+        i++;
     }
 
     // --- 3. Cleanup ---
@@ -136,11 +181,11 @@ void Mesh::addTexture(std::string texture_path, std::string type, unsigned int s
     if (nrChannels == 1) {
         internalFormat = GL_RED;
         dataFormat = GL_RED;
-    } 
+    }
     else if (nrChannels == 3) {
         internalFormat = GL_RGB;   // JPG, sem alpha
         dataFormat = GL_RGB;
-    } 
+    }
     else if (nrChannels == 4) {
         internalFormat = GL_RGBA;  // PNG com alpha! ← SUA TEXTURA 2!
         dataFormat = GL_RGBA;
@@ -148,19 +193,19 @@ void Mesh::addTexture(std::string texture_path, std::string type, unsigned int s
 
 
     glTexImage2D(
-        GL_TEXTURE_2D, 
-        0, 
-        internalFormat, 
-        width, 
-        height, 
-        0, 
-        dataFormat, 
-        GL_UNSIGNED_BYTE, 
+        GL_TEXTURE_2D,
+        0,
+        internalFormat,
+        width,
+        height,
+        0,
+        dataFormat,
+        GL_UNSIGNED_BYTE,
         data
     );
 
     glGenerateMipmap(GL_TEXTURE_2D);
-    
+
     int textureWrapping = type.contains("Ligth") ? GL_CLAMP_TO_BORDER : GL_REPEAT;
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, textureWrapping);
@@ -182,7 +227,8 @@ void Mesh::addTexture(std::string texture_path, std::string type, unsigned int s
 Mesh Mesh::TRIANGLE(glm::vec3 TRIpos)
 {
     std::vector<unsigned int> indices;
-    
+
+    // 1. Posições dos 8 cantos do cubo
     glm::vec3 pos[] = {
         glm::vec3(-0.5f, -0.5f,  0.5f), // 0: Front-Bottom-Left
         glm::vec3( 0.5f, -0.5f,  0.5f), // 1: Front-Bottom-Right
@@ -194,43 +240,42 @@ Mesh Mesh::TRIANGLE(glm::vec3 TRIpos)
         glm::vec3(-0.5f,  0.5f, -0.5f)  // 7: Back-Top-Left
     };
 
-    // Texture coordinates for a quad (tiling 5x)
-    // glm::vec2 uv0(0.0f, 0.0f);
-    // glm::vec2 uv1(5.0f, 0.0f);
-    // glm::vec2 uv2(5.0f, 5.0f);
-    // glm::vec2 uv3(0.0f, 5.0f);
+    // 2. Normais de cada face
+    glm::vec3 normalBack(0.0f, 0.0f, -1.0f);
+    glm::vec3 normalFront(0.0f, 0.0f, 1.0f);
+    glm::vec3 normalLeft(-1.0f, 0.0f, 0.0f);
+    glm::vec3 normalRight(1.0f, 0.0f, 0.0f);
+    glm::vec3 normalBottom(0.0f, -1.0f, 0.0f);
+    glm::vec3 normalTop(0.0f, 1.0f, 0.0f);
 
-// --- Normais Corrigidas ---
-    glm::vec3 normalBack(0.0f, 0.0f, -1.0f);   // Traseira
-    glm::vec3 normalFront(0.0f, 0.0f, 1.0f);   // Frontal
-    glm::vec3 normalLeft(-1.0f, 0.0f, 0.0f);   // Esquerda
-    glm::vec3 normalRight(1.0f, 0.0f, 0.0f);   // Direita
-    glm::vec3 normalBottom(0.0f, -1.0f, 0.0f); // Inferior
-    glm::vec3 normalTop(0.0f, 1.0f, 0.0f);     // Superior (Corrigido de -1.0f para 1.0f)
+    // 3. Coordenadas de textura padrão para o mapeamento do Quad
+    glm::vec2 uv0(0.0f, 0.0f);
+    glm::vec2 uv1(1.0f, 0.0f);
+    glm::vec2 uv2(1.0f, 1.0f);
+    glm::vec2 uv3(0.0f, 1.0f);
 
-    // --- Vertices ---
-    // Cada face com suas respectivas Posições, Normais e UVs
+    // 4. Montagem estruturada dos Vértices (Posição, Normal, UV)
     std::vector<Vertex> vertices = {
-        // Front Face (Normal Frontal)
-        {pos[0], normalFront}, {pos[1], normalFront}, {pos[2], normalFront}, {pos[3], normalFront},
+        // Back Face (Baseado nas primeiras 6 linhas do array original)
+        {pos[4], normalBack, uv0}, {pos[5], normalBack, uv1}, {pos[6], normalBack, uv2}, {pos[7], normalBack, uv3},
 
-        // Right Face (Normal Direita)
-        {pos[1], normalRight}, {pos[5], normalRight}, {pos[6], normalRight}, {pos[2], normalRight},
+        // Front Face
+        {pos[0], normalFront, uv0}, {pos[1], normalFront, uv1}, {pos[2], normalFront, uv2}, {pos[3], normalFront, uv3},
 
-        // Back Face (Normal Traseira)
-        {pos[5], normalBack}, {pos[4], normalBack}, {pos[7], normalBack}, {pos[6], normalBack},
+        // Left Face
+        {pos[3], normalLeft, uv1}, {pos[7], normalLeft, uv2}, {pos[4], normalLeft, uv3}, {pos[0], normalLeft, uv0},
 
-        // Left Face (Normal Esquerda)
-        {pos[4], normalLeft}, {pos[0], normalLeft}, {pos[3], normalLeft}, {pos[7], normalLeft},
+        // Right Face
+        {pos[2], normalRight, uv1}, {pos[6], normalRight, uv2}, {pos[5], normalRight, uv3}, {pos[1], normalRight, uv0},
 
-        // Top Face (Normal Superior)
-        {pos[3], normalTop}, {pos[2], normalTop}, {pos[6], normalTop}, {pos[7], normalTop},
+        // Bottom Face
+        {pos[4], normalBottom, uv3}, {pos[5], normalBottom, uv2}, {pos[1], normalBottom, uv1}, {pos[0], normalBottom, uv0},
 
-        // Bottom Face (Normal Inferior)
-        {pos[4], normalBottom}, {pos[5], normalBottom}, {pos[1], normalBottom}, {pos[0], normalBottom}
+        // Top Face
+        {pos[7], normalTop, uv3}, {pos[6], normalTop, uv2}, {pos[2], normalTop, uv1}, {pos[3], normalTop, uv0}
     };
 
-  
+    // 5. Geração automática dos Índices por Face (Mantido idêntico)
     for (int i = 0; i < 6; i++) {
         int offset = i * 4;
         // Triangle 1
@@ -244,7 +289,6 @@ Mesh Mesh::TRIANGLE(glm::vec3 TRIpos)
     }
 
     auto mesh = Mesh(vertices, indices, TRIpos);
-
     return mesh;
 }
 
@@ -262,7 +306,11 @@ void Mesh::setupMesh()
     glEnableVertexAttribArray(0);
 
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),(void*)offsetof(Vertex, Normals));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),(void*)offsetof(Vertex, Normals));
+
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),(void*)offsetof(Vertex, TexCoords));
+
 
     glGenBuffers(1, &this->EBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
