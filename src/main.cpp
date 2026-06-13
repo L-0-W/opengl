@@ -117,7 +117,7 @@ int main()
 
         Generic flashlightCutoffValue{glm::cos(glm::radians(10.5f))};
         Generic flashlightOuterCutoffValue{glm::cos(glm::radians(12.5f))};
-        Generic flashlightPositionValue = std::array<float,3>{core.camera.cameraPos.x, core.camera.cameraPos.y, core.camera.cameraPos.y};
+        Generic flashlightPositionValue = std::array<float,3>{core.camera.cameraPos.x, core.camera.cameraPos.y, core.camera.cameraPos.z};
         Generic flashlightDirectionValue = std::array<float,3>{core.camera.cameraFront.x, core.camera.cameraFront.y, core.camera.cameraFront.z};
 
         core.shader.addUniform(flashlightPositionValue, "spotLight.position");
